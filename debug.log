@@ -1,0 +1,25 @@
+
+
+  Election Flow Integration Tests
+    1) "before each" hook for "Should allow proposing and approving an election (setup check)"
+
+
+  0 passing (4s)
+  1 failing
+
+  1) Election Flow Integration Tests
+       "before each" hook for "Should allow proposing and approving an election (setup check)":
+     Error: VM Exception while processing transaction: reverted with custom error 'AccessControlUnauthorizedAccount("0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC", "0x0000000000000000000000000000000000000000000000000000000000000000")'
+    at Election.castVote (contracts/Election.sol:168)
+    at Election._checkRole (@openzeppelin/contracts/access/AccessControl.sol:87)
+    at Election.onlyRole (@openzeppelin/contracts/access/AccessControl.sol:64)
+    at Election.grantRole (@openzeppelin/contracts/access/AccessControl.sol:122)
+    at EdrProviderWrapper.request (node_modules/hardhat/src/internal/hardhat-network/provider/provider.ts:359:41)
+    at async HardhatEthersSigner.sendTransaction (node_modules/@nomicfoundation/hardhat-ethers/src/signers.ts:125:18)
+    at async send (node_modules/ethers/src.ts/contract/contract.ts:313:20)
+    at async Proxy.grantRole (node_modules/ethers/src.ts/contract/contract.ts:352:16)
+    at async Context.<anonymous> (test/integration/ElectionFlow.test.ts:119:9)
+  
+
+
+
