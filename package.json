@@ -1,10 +1,50 @@
 {
-  "name": "hardhat-project",
+  "name": "univote",
+  "version": "1.0.0",
+  "description": "Decentralized University Voting System",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy": "hardhat run scripts/deploy.ts --network localhost"
+  },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "hardhat": "^2.24.1"
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^14.0.0",
+    "hardhat": "^2.24.1",
+    "snarkjs": "^0.7.5",
+    "typescript": "^5.0.0"
   },
   "dependencies": {
-    "merkletreejs": "^0.5.2"
+    "@headlessui/react": "^1.0.0",
+    "@heroicons/react": "^2.0.0",
+    "@types/crypto-js": "^4.1.1",
+    "@types/uuid": "^9.0.0",
+    "autoprefixer": "^10.0.0",
+    "circomlib": "^2.0.5",
+    "circomlibjs": "^0.1.7",
+    "clsx": "^2.0.0",
+    "crypto-js": "^4.1.1",
+    "ethers": "^6.0.0",
+    "ffjavascript": "^0.2.55",
+    "jsencrypt": "^3.3.2",
+    "merkletreejs": "^0.5.2",
+    "next": "^14.0.0",
+    "postcss": "^8.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-hot-toast": "^2.0.0",
+    "tailwindcss": "^3.0.0",
+    "uuid": "^9.0.0",
+    "viem": "^2.31.3",
+    "wagmi": "^2.15.6"
   }
 }
