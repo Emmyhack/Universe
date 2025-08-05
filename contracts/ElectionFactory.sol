@@ -163,10 +163,10 @@ contract ElectionFactory is AccessControl, Pausable {
         bytes32 electionAdminRole = newElection.ELECTION_ADMIN_ROLE();
         newElection.grantRole(electionAdminRole, proposal.proposer);
 
-        // TEST ONLY: Grant DEFAULT_ADMIN_ROLE to the proposer (or test account)
-        // REMOVE THIS IN PRODUCTION!
-        bytes32 defaultAdminRole = newElection.DEFAULT_ADMIN_ROLE();
-        newElection.grantRole(defaultAdminRole, proposal.proposer);
+        // SECURITY: Only grant ELECTION_ADMIN_ROLE to the proposer
+        // The DEFAULT_ADMIN_ROLE should remain with the factory contract for security
+        // bytes32 defaultAdminRole = newElection.DEFAULT_ADMIN_ROLE();
+        // newElection.grantRole(defaultAdminRole, proposal.proposer);
 
         // Link the new election contract address to the university code
         universityElections[_universityCode].push(newElectionAddress);
@@ -237,6 +237,21 @@ contract ElectionFactory is AccessControl, Pausable {
      */
     function unpause() public onlyRole(DEFAULT_ADMIN_ROLE) { 
         _unpause();
+    }
+
+    /**
+     * @dev Allows the factory to grant roles on deployed elections.
+     * Only DEFAULT_ADMIN_ROLE can call this function.
+     * @param _electionAddress The address of the deployed election contract.
+     * @param _role The role to grant.
+     * @param _account The account to grant the role to.
+     */
+    function grantRoleOnElection(address _electionAddress, bytes32 _role, address _account) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(_electionAddress != address(0), "Invalid election address");
+        require(_account != address(0), "Invalid account address");
+        
+        Election election = Election(_electionAddress);
+        election.grantRole(_role, _account);
     }
 
     // TODO: Add a function to revoke a pending election proposal (callable by proposer or DAO)

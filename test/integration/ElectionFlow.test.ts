@@ -246,9 +246,10 @@ describe("Election Flow Integration Tests", function () {
     });
 
     it("Should allow VERIFIED_STUDENT_ROLE to cast a vote", async function () {
-        // Grant VERIFIED_STUDENT_ROLE to the student for this election instance (test only)
+        // Grant VERIFIED_STUDENT_ROLE to the student for this election instance
+        // Use the factory to grant roles since it has DEFAULT_ADMIN_ROLE on the election
         const VERIFIED_STUDENT_ROLE = await deployedElection.VERIFIED_STUDENT_ROLE();
-        await deployedElection.testGrantRole(VERIFIED_STUDENT_ROLE, student.address);
+        await electionFactory.connect(owner).grantRoleOnElection(deployedElection.target, VERIFIED_STUDENT_ROLE, student.address);
     });
 
     it("Should allow ELECTION_ADMIN_ROLE to end the election", async function () {
@@ -314,15 +315,15 @@ describe("Election Flow Integration Tests", function () {
     });
 
     it("Should allow ELECTION_ADMIN_ROLE to tally votes with ZK proof verification", async function () {
-        // Grant VERIFIED_STUDENT_ROLE to the student for this election instance (test only)
+        // Grant VERIFIED_STUDENT_ROLE to the student for this election instance
         const VERIFIED_STUDENT_ROLE = await deployedElection.VERIFIED_STUDENT_ROLE();
-        await deployedElection.testGrantRole(VERIFIED_STUDENT_ROLE, student.address);
+        await electionFactory.connect(owner).grantRoleOnElection(deployedElection.target, VERIFIED_STUDENT_ROLE, student.address);
     });
 
     it("Should allow ELECTION_ADMIN_ROLE to publish results", async function () {
-        // Grant VERIFIED_STUDENT_ROLE to the student for this election instance (test only)
+        // Grant VERIFIED_STUDENT_ROLE to the student for this election instance
         const VERIFIED_STUDENT_ROLE = await deployedElection.VERIFIED_STUDENT_ROLE();
-        await deployedElection.testGrantRole(VERIFIED_STUDENT_ROLE, student.address);
+        await electionFactory.connect(owner).grantRoleOnElection(deployedElection.target, VERIFIED_STUDENT_ROLE, student.address);
     });
 
      it("Should allow DEFAULT_ADMIN_ROLE to cancel the election", async function () {

@@ -351,9 +351,7 @@ contract Election is AccessControl, ReentrancyGuard, Pausable {
         _unpause();
     }
 
-    // TEST ONLY: Grant any role for testing purposes. REMOVE IN PRODUCTION!
-    function testGrantRole(bytes32 role, address account) public {
-        _grantRole(role, account);
-    }
+    // SECURITY: Removed test-only function that could grant any role
+    // This function was a security risk and has been removed for production
 
 }
