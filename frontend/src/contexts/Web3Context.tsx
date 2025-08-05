@@ -1,0 +1,191 @@
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { ethers } from 'ethers';
+import { Web3State, ContractAddresses } from '@/types';
+import toast from 'react-hot-toast';
+
+interface Web3ContextType {
+  state: Web3State;
+  connect: () => Promise<void>;
+  disconnect: () => void;
+  getContract: (contractName: string) => ethers.Contract | null;
+  executeTransaction: (tx: Promise<any>, message: string) => Promise<void>;
+}
+
+const Web3Context = createContext<Web3ContextType | undefined>(undefined);
+
+// Contract ABIs - In a real app, these would be imported from compiled artifacts
+const UNIVERSITY_REGISTRY_ABI = [
+  "function registerUniversity(string name, string code, address adminWallet)",
+  "function getUniversityInfo(string code) view returns (tuple(string name, string code, address adminWallet, bool isActive, uint256 registrationDate))",
+  "function universityExists(string code) view returns (bool)",
+  "function updateUniversityAdmin(string code, address newAdminWallet)",
+  "function setUniversityStatus(string code, bool isActive)",
+];
+
+const ELECTION_FACTORY_ABI = [
+  "function createElection(string universityCode, string title, uint256 startTime, uint256 endTime, bytes32 eligibilityRoot, address verificationMerkleAddress, address candidateRegistryAddress, address zkVerifierAddress)",
+  "function approveElection(string universityCode, uint256 proposalId)",
+  "function getUniversityElections(string universityCode) view returns (address[])",
+  "function getPendingElectionProposal(string universityCode, uint256 proposalId) view returns (tuple(string title, uint256 startTime, uint256 endTime, bytes32 eligibilityRoot, address verificationMerkleAddress, address candidateRegistryAddress, address zkVerifierAddress, address proposer, bool approved))",
+  "function grantRoleOnElection(address electionAddress, bytes32 role, address account)",
+];
+
+const CANDIDATE_REGISTRY_ABI = [
+  "function registerCandidate(address candidateAddress, string ipfsHash)",
+  "function getCandidateInfo(address candidateAddress) view returns (tuple(address candidateAddress, string ipfsHash, bool isVerified, uint256 registrationTimestamp))",
+  "function verifyCandidateEligibility(address candidateAddress, bool isVerified)",
+  "function updateCandidateInfo(address candidateAddress, string newIpfsHash)",
+];
+
+const ELECTION_ABI = [
+  "function electionConfig() view returns (tuple(string title, uint256 startTime, uint256 endTime, bytes32 eligibilityRoot, bool isActive))",
+  "function currentPhase() view returns (uint8)",
+  "function getCandidates() view returns (address[])",
+  "function registerCandidate(address candidateAddress, string ipfsHash)",
+  "function startElection()",
+  "function endElection()",
+  "function castVote(bytes32 encryptedVote, bytes32[] voterProof, bytes32 voterLeaf, bytes voteZKProof, bytes votePublicInputs)",
+  "function tallyVotes(bytes tallyResultZKProof, bytes tallyPublicInputs, bytes32 finalTallyResultHash)",
+  "function publishResults()",
+  "function cancelElection()",
+  "function getResultsHash() view returns (bytes32)",
+];
+
+const VERIFICATION_MERKLE_ABI = [
+  "function updateMerkleRoot(bytes32 newMerkleRoot)",
+  "function currentMerkleRoot() view returns (bytes32)",
+  "function verifyStudent(address studentAddress, bytes32[] merkleProof, bytes32 leaf) view returns (bool)",
+  "function isStudentVerified(address studentAddress, bytes32[] merkleProof, bytes32 leaf) view returns (bool)",
+];
+
+export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [state, setState] = useState<Web3State>({
+    isConnected: false,
+  });
+
+  const [contracts, setContracts] = useState<ContractAddresses | undefined>();
+
+  useEffect(() => {
+    // Check if MetaMask is installed
+    if (typeof window.ethereum !== 'undefined') {
+      checkConnection();
+    }
+  }, []);
+
+  const checkConnection = async () => {
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const accounts = await provider.listAccounts();
+      
+      if (accounts.length > 0) {
+        const network = await provider.getNetwork();
+        setState(prev => ({
+          ...prev,
+          isConnected: true,
+          account: accounts[0].address,
+          chainId: Number(network.chainId),
+        }));
+      }
+    } catch (error) {
+      console.error('Error checking connection:', error);
+    }
+  };
+
+  const connect = async () => {
+    try {
+      if (typeof window.ethereum === 'undefined') {
+        toast.error('MetaMask is not installed');
+        return;
+      }
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const accounts = await provider.send('eth_requestAccounts', []);
+      const network = await provider.getNetwork();
+
+      setState({
+        isConnected: true,
+        account: accounts[0],
+        chainId: Number(network.chainId),
+      });
+
+      toast.success('Wallet connected successfully!');
+    } catch (error) {
+      console.error('Error connecting wallet:', error);
+      toast.error('Failed to connect wallet');
+    }
+  };
+
+  const disconnect = () => {
+    setState({
+      isConnected: false,
+    });
+    toast.success('Wallet disconnected');
+  };
+
+  const getContract = (contractName: string): ethers.Contract | null => {
+    if (!state.isConnected || !contracts) return null;
+
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const address = contracts[contractName as keyof ContractAddresses];
+    
+    if (!address) return null;
+
+    let abi: any[] = [];
+    switch (contractName) {
+      case 'universityRegistry':
+        abi = UNIVERSITY_REGISTRY_ABI;
+        break;
+      case 'electionFactory':
+        abi = ELECTION_FACTORY_ABI;
+        break;
+      case 'candidateRegistry':
+        abi = CANDIDATE_REGISTRY_ABI;
+        break;
+      case 'verificationMerkle':
+        abi = VERIFICATION_MERKLE_ABI;
+        break;
+      default:
+        return null;
+    }
+
+    return new ethers.Contract(address, abi, provider);
+  };
+
+  const executeTransaction = async (tx: Promise<any>, message: string) => {
+    try {
+      toast.loading(message);
+      const result = await tx;
+      await result.wait();
+      toast.dismiss();
+      toast.success('Transaction completed successfully!');
+      return result;
+    } catch (error) {
+      toast.dismiss();
+      toast.error('Transaction failed');
+      console.error('Transaction error:', error);
+      throw error;
+    }
+  };
+
+  const value: Web3ContextType = {
+    state,
+    connect,
+    disconnect,
+    getContract,
+    executeTransaction,
+  };
+
+  return (
+    <Web3Context.Provider value={value}>
+      {children}
+    </Web3Context.Provider>
+  );
+};
+
+export const useWeb3 = () => {
+  const context = useContext(Web3Context);
+  if (context === undefined) {
+    throw new Error('useWeb3 must be used within a Web3Provider');
+  }
+  return context;
+};

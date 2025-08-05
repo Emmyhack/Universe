@@ -1,11 +1,26 @@
 {
-  "name": "hardhat-project",
+  "name": "univote-platform",
+  "version": "1.0.0",
+  "description": "Decentralized University Election Platform",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "hardhat test",
+    "compile": "hardhat compile",
+    "deploy": "hardhat run scripts/deploy.ts",
+    "frontend:dev": "cd frontend && npm run dev",
+    "frontend:build": "cd frontend && npm run build",
+    "install:all": "npm install && cd frontend && npm install"
+  },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "hardhat": "^2.24.1"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^5.4.0",
     "merkletreejs": "^0.5.2"
-  }
+  },
+  "keywords": ["blockchain", "elections", "university", "voting", "dapp"],
+  "author": "UniVote Team",
+  "license": "MIT"
 }
