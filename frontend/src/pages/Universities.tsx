@@ -5,7 +5,6 @@ import {
   Plus, 
   Edit, 
   Users, 
-  Calendar,
   CheckCircle,
   XCircle,
   Settings,
@@ -14,11 +13,10 @@ import {
 import { University, UserRole } from '@/types';
 
 const Universities = () => {
-  const { state, getContract, executeTransaction } = useWeb3();
+  const { state } = useWeb3();
   const [universities, setUniversities] = useState<University[]>([]);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     if (state.isConnected) {
@@ -110,7 +108,6 @@ const Universities = () => {
         </div>
         {canRegisterUniversity() && (
           <button
-            onClick={() => setShowCreateModal(true)}
             className="btn-primary inline-flex items-center space-x-2"
           >
             <Plus className="w-4 h-4" />
@@ -130,7 +127,6 @@ const Universities = () => {
             </p>
             {canRegisterUniversity() && (
               <button
-                onClick={() => setShowCreateModal(true)}
                 className="btn-primary inline-flex items-center space-x-2"
               >
                 <Plus className="w-4 h-4" />
@@ -239,7 +235,7 @@ const Universities = () => {
         </div>
         <div className="card text-center">
           <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-            <Calendar className="w-6 h-6 text-purple-600" />
+            <GraduationCap className="w-6 h-6 text-purple-600" />
           </div>
           <h3 className="text-2xl font-bold text-gray-900 mb-2">
             {universities.length > 0 ? Math.floor((Date.now() - Math.min(...universities.map(u => u.registrationDate))) / (1000 * 60 * 60 * 24)) : 0}

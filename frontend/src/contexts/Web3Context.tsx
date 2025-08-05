@@ -37,20 +37,6 @@ const CANDIDATE_REGISTRY_ABI = [
   "function updateCandidateInfo(address candidateAddress, string newIpfsHash)",
 ];
 
-const ELECTION_ABI = [
-  "function electionConfig() view returns (tuple(string title, uint256 startTime, uint256 endTime, bytes32 eligibilityRoot, bool isActive))",
-  "function currentPhase() view returns (uint8)",
-  "function getCandidates() view returns (address[])",
-  "function registerCandidate(address candidateAddress, string ipfsHash)",
-  "function startElection()",
-  "function endElection()",
-  "function castVote(bytes32 encryptedVote, bytes32[] voterProof, bytes32 voterLeaf, bytes voteZKProof, bytes votePublicInputs)",
-  "function tallyVotes(bytes tallyResultZKProof, bytes tallyPublicInputs, bytes32 finalTallyResultHash)",
-  "function publishResults()",
-  "function cancelElection()",
-  "function getResultsHash() view returns (bytes32)",
-];
-
 const VERIFICATION_MERKLE_ABI = [
   "function updateMerkleRoot(bytes32 newMerkleRoot)",
   "function currentMerkleRoot() view returns (bytes32)",
@@ -62,8 +48,6 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
   const [state, setState] = useState<Web3State>({
     isConnected: false,
   });
-
-  const [contracts, setContracts] = useState<ContractAddresses | undefined>();
 
   useEffect(() => {
     // Check if MetaMask is installed
@@ -123,10 +107,20 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const getContract = (contractName: string): ethers.Contract | null => {
-    if (!state.isConnected || !contracts) return null;
+    if (!state.isConnected) return null;
 
     const provider = new ethers.BrowserProvider(window.ethereum);
-    const address = contracts[contractName as keyof ContractAddresses];
+    
+    // Mock contract addresses - in real app, these would be from config
+    const mockContracts: ContractAddresses = {
+      universityRegistry: '0x1234567890123456789012345678901234567890',
+      electionFactory: '0x2345678901234567890123456789012345678901',
+      candidateRegistry: '0x3456789012345678901234567890123456789012',
+      verificationMerkle: '0x4567890123456789012345678901234567890123',
+      zkVerifier: '0x5678901234567890123456789012345678901234',
+    };
+    
+    const address = mockContracts[contractName as keyof ContractAddresses];
     
     if (!address) return null;
 

@@ -1,11 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useContract } from './useContract';
 import { Election, ElectionPhase } from '@/types';
 
 export const useElection = (electionAddress?: string) => {
   const [election, setElection] = useState<Election | null>(null);
   const [loading, setLoading] = useState(false);
-  const { readContract } = useContract('election');
 
   const loadElection = useCallback(async () => {
     if (!electionAddress) return;
@@ -65,11 +63,11 @@ export const useElection = (electionAddress?: string) => {
   }, [electionAddress]);
 
   const castVote = useCallback(async (
-    encryptedVote: string,
-    voterProof: string[],
-    voterLeaf: string,
-    voteZKProof: string,
-    votePublicInputs: string
+    _encryptedVote: string,
+    _voterProof: string[],
+    _voterLeaf: string,
+    _voteZKProof: string,
+    _votePublicInputs: string
   ) => {
     if (!electionAddress) return;
     

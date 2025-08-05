@@ -7,19 +7,16 @@ import {
   CheckCircle, 
   XCircle,
   User,
-  Calendar,
-  FileText,
   Shield,
   Eye
 } from 'lucide-react';
 import { Candidate, UserRole } from '@/types';
 
 const Candidates = () => {
-  const { state, getContract, executeTransaction } = useWeb3();
+  const { state } = useWeb3();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [filter, setFilter] = useState<'all' | 'verified' | 'unverified'>('all');
 
   useEffect(() => {
@@ -118,7 +115,6 @@ const Candidates = () => {
         </div>
         {canRegisterCandidate() && (
           <button
-            onClick={() => setShowCreateModal(true)}
             className="btn-primary inline-flex items-center space-x-2"
           >
             <Plus className="w-4 h-4" />
@@ -162,7 +158,6 @@ const Candidates = () => {
             </p>
             {canRegisterCandidate() && (
               <button
-                onClick={() => setShowCreateModal(true)}
                 className="btn-primary inline-flex items-center space-x-2"
               >
                 <Plus className="w-4 h-4" />

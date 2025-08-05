@@ -15,10 +15,10 @@ import {
 import { UserRole } from '@/types';
 
 const Admin = () => {
-  const { state, getContract } = useWeb3();
+  const { state } = useWeb3();
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
-  const [systemStats, setSystemStats] = useState({
+  const [systemStats] = useState({
     totalElections: 12,
     activeElections: 3,
     totalUniversities: 5,

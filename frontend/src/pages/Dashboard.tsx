@@ -16,7 +16,7 @@ import {
 import { UserRole, Election, University } from '@/types';
 
 const Dashboard = () => {
-  const { state, getContract } = useWeb3();
+  const { state } = useWeb3();
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [elections, setElections] = useState<Election[]>([]);
   const [universities, setUniversities] = useState<University[]>([]);

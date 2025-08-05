@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { ethers } from 'ethers';
 import { useWeb3 } from '@/contexts/Web3Context';
 import toast from 'react-hot-toast';
 

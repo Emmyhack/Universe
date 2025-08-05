@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Vote, Shield, Users, Zap, Lock, Globe } from 'lucide-react';
+import { Vote, Shield, Users, Zap, Lock, Globe, Settings } from 'lucide-react';
 
 const Home = () => {
   const features = [

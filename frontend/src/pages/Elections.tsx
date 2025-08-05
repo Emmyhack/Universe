@@ -9,7 +9,6 @@ import {
   AlertCircle,
   Users,
   Calendar,
-  Settings,
   Eye,
   Edit,
   Trash2
@@ -18,7 +17,7 @@ import { Election, ElectionPhase, UserRole } from '@/types';
 import CreateElectionModal from '@/components/CreateElectionModal';
 
 const Elections = () => {
-  const { state, getContract, executeTransaction } = useWeb3();
+  const { state } = useWeb3();
   const [elections, setElections] = useState<Election[]>([]);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
@@ -103,7 +102,7 @@ const Elections = () => {
     return userRole === UserRole.ELECTION_OFFICER || userRole === UserRole.UNIVERSITY_ADMIN;
   };
 
-  const canManageElection = (election: Election) => {
+  const canManageElection = (_election: Election) => {
     return userRole === UserRole.ELECTION_OFFICER || userRole === UserRole.UNIVERSITY_ADMIN;
   };
 
@@ -192,7 +191,7 @@ const Elections = () => {
           <div className="card text-center py-12">
             <Vote className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No Elections Found</h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 mb-4">
               {filter === 'all' 
                 ? 'No elections have been created yet.'
                 : `No ${filter} elections found.`
@@ -201,7 +200,7 @@ const Elections = () => {
             {canCreateElection() && (
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="btn-primary mt-4 inline-flex items-center space-x-2"
+                className="btn-primary inline-flex items-center space-x-2"
               >
                 <Plus className="w-4 h-4" />
                 <span>Create First Election</span>
