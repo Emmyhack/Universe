@@ -18,6 +18,16 @@ const Candidates = () => {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'verified' | 'unverified'>('all');
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [registerForm, setRegisterForm] = useState({ address: '', ipfsHash: '' });
+  const [registerError, setRegisterError] = useState('');
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewCandidate, setViewCandidate] = useState<Candidate | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({ address: '', ipfsHash: '', index: -1 });
+  const [editError, setEditError] = useState('');
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [verifyIndex, setVerifyIndex] = useState(-1);
 
   useEffect(() => {
     if (state.isConnected) {
@@ -80,6 +90,69 @@ const Candidates = () => {
     }
   });
 
+  // Registration handler
+  const handleRegisterCandidate = (e: React.FormEvent) => {
+    e.preventDefault();
+    setRegisterError('');
+    if (!registerForm.address || !registerForm.ipfsHash) {
+      setRegisterError('All fields are required.');
+      return;
+    }
+    setCandidates([
+      ...candidates,
+      {
+        address: registerForm.address,
+        ipfsHash: registerForm.ipfsHash,
+        isVerified: false,
+        registrationTimestamp: Date.now(),
+      },
+    ]);
+    setShowRegisterModal(false);
+    setRegisterForm({ address: '', ipfsHash: '' });
+  };
+
+  // View handler
+  const openViewModal = (candidate: Candidate) => {
+    setViewCandidate(candidate);
+    setShowViewModal(true);
+  };
+  // Edit handler
+  const openEditModal = (candidate: Candidate, index: number) => {
+    setEditForm({ address: candidate.address, ipfsHash: candidate.ipfsHash, index });
+    setEditError('');
+    setShowEditModal(true);
+  };
+  const handleEditCandidate = (e: React.FormEvent) => {
+    e.preventDefault();
+    setEditError('');
+    if (!editForm.address || !editForm.ipfsHash) {
+      setEditError('All fields are required.');
+      return;
+    }
+    const updated = [...candidates];
+    updated[editForm.index] = {
+      ...updated[editForm.index],
+      address: editForm.address,
+      ipfsHash: editForm.ipfsHash,
+    };
+    setCandidates(updated);
+    setShowEditModal(false);
+  };
+  // Verify handler
+  const openVerifyModal = (index: number) => {
+    setVerifyIndex(index);
+    setShowVerifyModal(true);
+  };
+  const handleVerifyCandidate = () => {
+    const updated = [...candidates];
+    updated[verifyIndex] = {
+      ...updated[verifyIndex],
+      isVerified: true,
+    };
+    setCandidates(updated);
+    setShowVerifyModal(false);
+  };
+
   if (!state.isConnected) {
     return (
       <div className="text-center space-y-6">
@@ -116,6 +189,7 @@ const Candidates = () => {
         {canRegisterCandidate() && (
           <button
             className="btn-primary inline-flex items-center space-x-2"
+            onClick={() => setShowRegisterModal(true)}
           >
             <Plus className="w-4 h-4" />
             <span>Register Candidate</span>
@@ -159,6 +233,7 @@ const Candidates = () => {
             {canRegisterCandidate() && (
               <button
                 className="btn-primary inline-flex items-center space-x-2"
+                onClick={() => setShowRegisterModal(true)}
               >
                 <Plus className="w-4 h-4" />
                 <span>Register First Candidate</span>
@@ -223,18 +298,18 @@ const Candidates = () => {
                       <span>Verification Status</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <button className="btn-secondary text-sm px-3 py-1 inline-flex items-center space-x-1">
+                      <button className="btn-secondary text-sm px-3 py-1 inline-flex items-center space-x-1" onClick={() => openViewModal(candidate)}>
                         <Eye className="w-4 h-4" />
                         <span>View</span>
                       </button>
                       {canVerifyCandidate() && (
                         <>
-                          <button className="btn-secondary text-sm px-3 py-1 inline-flex items-center space-x-1">
+                          <button className="btn-secondary text-sm px-3 py-1 inline-flex items-center space-x-1" onClick={() => openEditModal(candidate, index)}>
                             <Edit className="w-4 h-4" />
                             <span>Edit</span>
                           </button>
                           {!candidate.isVerified && (
-                            <button className="btn-primary text-sm px-3 py-1 inline-flex items-center space-x-1">
+                            <button className="btn-primary text-sm px-3 py-1 inline-flex items-center space-x-1" onClick={() => openVerifyModal(index)}>
                               <CheckCircle className="w-4 h-4" />
                               <span>Verify</span>
                             </button>
@@ -280,6 +355,79 @@ const Candidates = () => {
           <p className="text-gray-600">Pending Verification</p>
         </div>
       </div>
+
+      {showRegisterModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md relative">
+            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-600" onClick={() => setShowRegisterModal(false)}>
+              <span className="text-xl">&times;</span>
+            </button>
+            <h2 className="text-2xl font-bold mb-4">Register Candidate</h2>
+            <form onSubmit={handleRegisterCandidate} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Address</label>
+                <input type="text" className="input font-mono" value={registerForm.address} onChange={e => setRegisterForm(f => ({ ...f, address: e.target.value }))} required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">IPFS Hash</label>
+                <input type="text" className="input font-mono" value={registerForm.ipfsHash} onChange={e => setRegisterForm(f => ({ ...f, ipfsHash: e.target.value }))} required />
+              </div>
+              {registerError && <div className="text-red-600 text-sm">{registerError}</div>}
+              <button type="submit" className="btn-primary w-full">Register</button>
+            </form>
+          </div>
+        </div>
+      )}
+      {showViewModal && viewCandidate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md relative">
+            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-600" onClick={() => setShowViewModal(false)}>
+              <span className="text-xl">&times;</span>
+            </button>
+            <h2 className="text-2xl font-bold mb-4">Candidate Details</h2>
+            <div className="space-y-2">
+              <div><b>Address:</b> <span className="font-mono">{viewCandidate.address}</span></div>
+              <div><b>IPFS Hash:</b> <span className="font-mono">{viewCandidate.ipfsHash}</span></div>
+              <div><b>Verified:</b> {viewCandidate.isVerified ? 'Yes' : 'No'}</div>
+              <div><b>Registration Date:</b> {new Date(viewCandidate.registrationTimestamp).toLocaleDateString()}</div>
+            </div>
+          </div>
+        </div>
+      )}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md relative">
+            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-600" onClick={() => setShowEditModal(false)}>
+              <span className="text-xl">&times;</span>
+            </button>
+            <h2 className="text-2xl font-bold mb-4">Edit Candidate</h2>
+            <form onSubmit={handleEditCandidate} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Address</label>
+                <input type="text" className="input font-mono" value={editForm.address} onChange={e => setEditForm(f => ({ ...f, address: e.target.value }))} required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">IPFS Hash</label>
+                <input type="text" className="input font-mono" value={editForm.ipfsHash} onChange={e => setEditForm(f => ({ ...f, ipfsHash: e.target.value }))} required />
+              </div>
+              {editError && <div className="text-red-600 text-sm">{editError}</div>}
+              <button type="submit" className="btn-primary w-full">Save Changes</button>
+            </form>
+          </div>
+        </div>
+      )}
+      {showVerifyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md relative">
+            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-600" onClick={() => setShowVerifyModal(false)}>
+              <span className="text-xl">&times;</span>
+            </button>
+            <h2 className="text-2xl font-bold mb-4">Verify Candidate</h2>
+            <div className="mb-4">Are you sure you want to verify this candidate?</div>
+            <button className="btn-primary w-full" onClick={handleVerifyCandidate}>Verify</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

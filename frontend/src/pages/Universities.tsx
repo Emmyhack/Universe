@@ -21,6 +21,11 @@ const Universities = () => {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [registerForm, setRegisterForm] = useState({ name: '', code: '', adminWallet: '' });
   const [registerError, setRegisterError] = useState('');
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({ name: '', code: '', adminWallet: '', index: -1 });
+  const [editError, setEditError] = useState('');
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [settingsForm, setSettingsForm] = useState({ isActive: true, index: -1 });
 
   useEffect(() => {
     if (state.isConnected) {
@@ -100,6 +105,45 @@ const Universities = () => {
     setRegisterForm({ name: '', code: '', adminWallet: '' });
   };
 
+  // Edit handler
+  const openEditModal = (university: University, index: number) => {
+    setEditForm({ name: university.name, code: university.code, adminWallet: university.adminWallet, index });
+    setEditError('');
+    setShowEditModal(true);
+  };
+  const handleEditUniversity = (e: React.FormEvent) => {
+    e.preventDefault();
+    setEditError('');
+    if (!editForm.name || !editForm.code || !editForm.adminWallet) {
+      setEditError('All fields are required.');
+      return;
+    }
+    const updated = [...universities];
+    updated[editForm.index] = {
+      ...updated[editForm.index],
+      name: editForm.name,
+      code: editForm.code,
+      adminWallet: editForm.adminWallet,
+    };
+    setUniversities(updated);
+    setShowEditModal(false);
+  };
+  // Settings handler
+  const openSettingsModal = (university: University, index: number) => {
+    setSettingsForm({ isActive: university.isActive, index });
+    setShowSettingsModal(true);
+  };
+  const handleSettingsUniversity = (e: React.FormEvent) => {
+    e.preventDefault();
+    const updated = [...universities];
+    updated[settingsForm.index] = {
+      ...updated[settingsForm.index],
+      isActive: settingsForm.isActive,
+    };
+    setUniversities(updated);
+    setShowSettingsModal(false);
+  };
+
   if (!state.isConnected) {
     return (
       <div className="text-center space-y-6">
@@ -166,6 +210,54 @@ const Universities = () => {
               </div>
               {registerError && <div className="text-red-600 text-sm">{registerError}</div>}
               <button type="submit" className="btn-primary w-full">Register</button>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Edit University Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md relative">
+            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-600" onClick={() => setShowEditModal(false)}>
+              <span className="text-xl">&times;</span>
+            </button>
+            <h2 className="text-2xl font-bold mb-4">Edit University</h2>
+            <form onSubmit={handleEditUniversity} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Name</label>
+                <input type="text" className="input" value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Code</label>
+                <input type="text" className="input" value={editForm.code} onChange={e => setEditForm(f => ({ ...f, code: e.target.value }))} required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Admin Wallet</label>
+                <input type="text" className="input font-mono" value={editForm.adminWallet} onChange={e => setEditForm(f => ({ ...f, adminWallet: e.target.value }))} required />
+              </div>
+              {editError && <div className="text-red-600 text-sm">{editError}</div>}
+              <button type="submit" className="btn-primary w-full">Save Changes</button>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Settings Modal */}
+      {showSettingsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md relative">
+            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-600" onClick={() => setShowSettingsModal(false)}>
+              <span className="text-xl">&times;</span>
+            </button>
+            <h2 className="text-2xl font-bold mb-4">University Settings</h2>
+            <form onSubmit={handleSettingsUniversity} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Active Status</label>
+                <select className="input" value={settingsForm.isActive ? 'active' : 'inactive'} onChange={e => setSettingsForm(f => ({ ...f, isActive: e.target.value === 'active' }))}>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+              <button type="submit" className="btn-primary w-full">Save Settings</button>
             </form>
           </div>
         </div>
@@ -267,11 +359,11 @@ const Universities = () => {
                     <div className="flex items-center space-x-2">
                       {canManageUniversity(university) && (
                         <>
-                          <button className="btn-secondary text-sm px-3 py-1 inline-flex items-center space-x-1">
+                          <button className="btn-secondary text-sm px-3 py-1 inline-flex items-center space-x-1" onClick={() => openEditModal(university, index)}>
                             <Edit className="w-4 h-4" />
                             <span>Edit</span>
                           </button>
-                          <button className="btn-secondary text-sm px-3 py-1 inline-flex items-center space-x-1">
+                          <button className="btn-secondary text-sm px-3 py-1 inline-flex items-center space-x-1" onClick={() => openSettingsModal(university, index)}>
                             <Settings className="w-4 h-4" />
                             <span>Settings</span>
                           </button>
