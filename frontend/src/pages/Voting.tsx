@@ -83,7 +83,7 @@ const Voting = () => {
     }
   };
 
-  const loadCandidateProfiles = async (candidateAddresses: string[]) => {
+  const loadCandidateProfiles = async (_candidateAddresses: string[]) => {
     try {
       setProfilesLoading(true);
       

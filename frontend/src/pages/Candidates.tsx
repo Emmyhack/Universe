@@ -30,7 +30,6 @@ const Candidates = () => {
   const [registerForm, setRegisterForm] = useState({ address: '', ipfsHash: '' });
   const [registerError, setRegisterError] = useState('');
   const [showViewModal, setShowViewModal] = useState(false);
-  const [viewCandidate, setViewCandidate] = useState<Candidate | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editForm, setEditForm] = useState({ address: '', ipfsHash: '', index: -1 });
   const [editError, setEditError] = useState('');
@@ -341,13 +340,13 @@ const Candidates = () => {
                           {candidate.profile?.university && (
                             <div className="flex items-center space-x-1">
                               <GraduationCap className="w-3 h-3" />
-                              <span className="truncate">{candidate.profile.university}</span>
+                              <span className="truncate">{candidate.profile?.university}</span>
                             </div>
                           )}
                           {candidate.profile?.experience && (
                             <div className="flex items-center space-x-1">
                               <Award className="w-3 h-3" />
-                              <span className="truncate">{candidate.profile.experience}</span>
+                              <span className="truncate">{candidate.profile?.experience}</span>
                             </div>
                           )}
                           <div className="flex items-center space-x-1">
@@ -371,7 +370,7 @@ const Candidates = () => {
                     <div>
                       <h4 className="text-sm font-medium text-gray-900 mb-2">Platform Highlights:</h4>
                       <div className="flex flex-wrap gap-1">
-                        {candidate.profile.platform.slice(0, 2).map((point, idx) => (
+                        {candidate.profile?.platform?.slice(0, 2).map((point: string, idx: number) => (
                           <span
                             key={idx}
                             className="inline-block px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs"
@@ -379,7 +378,7 @@ const Candidates = () => {
                             {point.length > 30 ? `${point.substring(0, 30)}...` : point}
                           </span>
                         ))}
-                        {candidate.profile.platform.length > 2 && (
+                        {candidate.profile?.platform && candidate.profile.platform.length > 2 && (
                           <span className="inline-block px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
                             +{candidate.profile.platform.length - 2} more
                           </span>
@@ -393,7 +392,7 @@ const Candidates = () => {
                     <div>
                       <h4 className="text-sm font-medium text-gray-900 mb-1">Manifesto:</h4>
                       <p className="text-sm text-gray-600 line-clamp-2">
-                        {candidate.profile.manifesto}
+                        {candidate.profile?.manifesto}
                       </p>
                     </div>
                   )}
@@ -583,7 +582,7 @@ const Candidates = () => {
                 <div>
                   <h4 className="text-lg font-semibold text-gray-900 mb-3">Platform & Policies</h4>
                   <div className="grid grid-cols-1 gap-2">
-                    {viewCandidate.profile.platform.map((point, idx) => (
+                                           {viewCandidate.profile.platform.map((point: string, idx: number) => (
                       <div key={idx} className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
                         <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                         <span className="text-gray-700">{point}</span>
@@ -609,7 +608,7 @@ const Candidates = () => {
                 <div>
                   <h4 className="text-lg font-semibold text-gray-900 mb-3">Key Achievements</h4>
                   <div className="grid grid-cols-1 gap-2">
-                    {viewCandidate.profile.achievements.map((achievement, idx) => (
+                                         {viewCandidate.profile.achievements.map((achievement: string, idx: number) => (
                       <div key={idx} className="flex items-center space-x-2 p-3 bg-yellow-50 rounded-lg">
                         <Award className="w-5 h-5 text-yellow-600 flex-shrink-0" />
                         <span className="text-gray-700">{achievement}</span>
