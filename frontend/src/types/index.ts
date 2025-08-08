@@ -31,6 +31,29 @@ export interface Candidate {
   registrationTimestamp: number;
 }
 
+export interface CandidateProfile {
+  name: string;
+  photo?: string; // base64 encoded image or IPFS hash
+  manifesto: string;
+  platform: string[];
+  experience?: string;
+  contact?: string;
+  university?: string;
+  studentId?: string;
+  socialMedia?: {
+    twitter?: string;
+    instagram?: string;
+    linkedin?: string;
+  };
+  achievements?: string[];
+}
+
+export interface CandidateWithProfile extends Candidate {
+  profile?: CandidateProfile;
+  profileLoaded?: boolean;
+  profileError?: string;
+}
+
 export interface ElectionConfig {
   title: string;
   startTime: number;

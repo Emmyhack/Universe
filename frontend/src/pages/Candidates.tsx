@@ -8,15 +8,20 @@ import {
   XCircle,
   User,
   Shield,
-  Eye
+  Eye,
+  GraduationCap,
+  Award,
+  Mail
 } from 'lucide-react';
-import { Candidate, UserRole } from '@/types';
+import { Candidate, UserRole, CandidateWithProfile } from '@/types';
+import { fetchMultipleCandidateProfiles, getPlaceholderProfile } from '@/utils/ipfs';
 
 const Candidates = () => {
   const { state } = useWeb3();
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [candidates, setCandidates] = useState<CandidateWithProfile[]>([]);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profilesLoading, setProfilesLoading] = useState(false);
   const [filter, setFilter] = useState<'all' | 'verified' | 'unverified'>('all');
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [registerForm, setRegisterForm] = useState({ address: '', ipfsHash: '' });
@@ -28,6 +33,7 @@ const Candidates = () => {
   const [editError, setEditError] = useState('');
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [verifyIndex, setVerifyIndex] = useState(-1);
+  const [viewCandidate, setViewCandidate] = useState<CandidateWithProfile | null>(null);
 
   useEffect(() => {
     if (state.isConnected) {
@@ -39,31 +45,63 @@ const Candidates = () => {
     try {
       setLoading(true);
       // Mock data - in real app, fetch from contracts
-      setCandidates([
+      const candidatesData: CandidateWithProfile[] = [
         {
           address: '0x1234567890123456789012345678901234567890',
           ipfsHash: 'QmCandidate1InfoHash',
           isVerified: true,
           registrationTimestamp: Date.now() - 86400000,
+          profileLoaded: false
         },
         {
           address: '0x2345678901234567890123456789012345678901',
           ipfsHash: 'QmCandidate2InfoHash',
           isVerified: false,
           registrationTimestamp: Date.now() - 172800000,
+          profileLoaded: false
         },
         {
           address: '0x3456789012345678901234567890123456789012',
           ipfsHash: 'QmCandidate3InfoHash',
           isVerified: true,
           registrationTimestamp: Date.now() - 259200000,
+          profileLoaded: false
         },
-      ]);
+      ];
+      
+      setCandidates(candidatesData);
       setUserRole(UserRole.CANDIDATE_MANAGER);
+      
+      // Load candidate profiles
+      await loadCandidateProfiles(candidatesData);
     } catch (error) {
       console.error('Error loading candidates:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCandidateProfiles = async (candidatesData: CandidateWithProfile[]) => {
+    try {
+      setProfilesLoading(true);
+      
+      // Fetch profiles from IPFS
+      const ipfsHashes = candidatesData.map(c => c.ipfsHash);
+      const profiles = await fetchMultipleCandidateProfiles(ipfsHashes);
+      
+      // Update candidates with loaded profiles
+      const updatedCandidates = candidatesData.map(candidate => ({
+        ...candidate,
+        profile: profiles[candidate.ipfsHash] || getPlaceholderProfile(candidate.address),
+        profileLoaded: true,
+        profileError: profiles[candidate.ipfsHash] ? undefined : 'Failed to load profile'
+      }));
+      
+      setCandidates(updatedCandidates);
+    } catch (error) {
+      console.error('Error loading candidate profiles:', error);
+    } finally {
+      setProfilesLoading(false);
     }
   };
 
@@ -112,7 +150,7 @@ const Candidates = () => {
   };
 
   // View handler
-  const openViewModal = (candidate: Candidate) => {
+  const openViewModal = (candidate: CandidateWithProfile) => {
     setViewCandidate(candidate);
     setShowViewModal(true);
   };
@@ -247,55 +285,119 @@ const Candidates = () => {
                 <div className="space-y-4">
                   {/* Header */}
                   <div className="flex items-start justify-between">
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-                          <User className="w-5 h-5 text-primary-600" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            {formatAddress(candidate.address)}
+                    <div className="flex items-start space-x-3">
+                      {/* Candidate Photo */}
+                      <div className="flex-shrink-0">
+                        {candidate.profile?.photo ? (
+                          <img
+                            src={candidate.profile.photo}
+                            alt={candidate.profile.name}
+                            className="w-12 h-12 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                            <User className="w-6 h-6 text-primary-600" />
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <h3 className="text-lg font-semibold text-gray-900 truncate">
+                            {candidate.profile?.name || formatAddress(candidate.address)}
                           </h3>
-                          <p className="text-sm text-gray-600">Candidate Address</p>
+                          {candidate.isVerified && (
+                            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full flex items-center space-x-1">
+                              <CheckCircle className="w-3 h-3" />
+                              <span>Verified</span>
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-1 text-sm text-gray-600">
+                          {candidate.profile?.university && (
+                            <div className="flex items-center space-x-1">
+                              <GraduationCap className="w-3 h-3" />
+                              <span className="truncate">{candidate.profile.university}</span>
+                            </div>
+                          )}
+                          {candidate.profile?.experience && (
+                            <div className="flex items-center space-x-1">
+                              <Award className="w-3 h-3" />
+                              <span className="truncate">{candidate.profile.experience}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center space-x-1">
+                            <User className="w-3 h-3" />
+                            <span className="font-mono text-xs">{formatAddress(candidate.address)}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      {candidate.isVerified ? (
-                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full flex items-center space-x-1">
-                          <CheckCircle className="w-3 h-3" />
-                          <span>Verified</span>
-                        </span>
-                      ) : (
-                        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full flex items-center space-x-1">
-                          <XCircle className="w-3 h-3" />
-                          <span>Pending</span>
-                        </span>
-                      )}
-                    </div>
+                    
+                    {!candidate.isVerified && (
+                      <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full flex items-center space-x-1 ml-2">
+                        <XCircle className="w-3 h-3" />
+                        <span>Pending</span>
+                      </span>
+                    )}
                   </div>
 
+                  {/* Platform Preview */}
+                  {candidate.profile?.platform && candidate.profile.platform.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900 mb-2">Platform Highlights:</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {candidate.profile.platform.slice(0, 2).map((point, idx) => (
+                          <span
+                            key={idx}
+                            className="inline-block px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs"
+                          >
+                            {point.length > 30 ? `${point.substring(0, 30)}...` : point}
+                          </span>
+                        ))}
+                        {candidate.profile.platform.length > 2 && (
+                          <span className="inline-block px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                            +{candidate.profile.platform.length - 2} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Manifesto Preview */}
+                  {candidate.profile?.manifesto && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900 mb-1">Manifesto:</h4>
+                      <p className="text-sm text-gray-600 line-clamp-2">
+                        {candidate.profile.manifesto}
+                      </p>
+                    </div>
+                  )}
+
                   {/* Details */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">IPFS Hash:</span>
-                      <span className="font-mono text-gray-900 text-xs">
-                        {candidate.ipfsHash}
-                      </span>
+                  <div className="space-y-2 text-xs text-gray-500">
+                    <div className="flex items-center justify-between">
+                      <span>IPFS Hash:</span>
+                      <span className="font-mono">{candidate.ipfsHash}</span>
                     </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">Registration Date:</span>
-                      <span className="text-gray-900">
-                        {new Date(candidate.registrationTimestamp).toLocaleDateString()}
-                      </span>
+                    <div className="flex items-center justify-between">
+                      <span>Registration Date:</span>
+                      <span>{new Date(candidate.registrationTimestamp).toLocaleDateString()}</span>
                     </div>
+                    {profilesLoading && !candidate.profileLoaded && (
+                      <div className="flex items-center space-x-2">
+                        <div className="animate-spin w-3 h-3 border-2 border-primary-600 border-t-transparent rounded-full"></div>
+                        <span>Loading profile...</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Actions */}
                   <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                     <div className="flex items-center space-x-2 text-sm text-gray-600">
                       <Shield className="w-4 h-4" />
-                      <span>Verification Status</span>
+                      <span>Management</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <button className="btn-secondary text-sm px-3 py-1 inline-flex items-center space-x-1" onClick={() => openViewModal(candidate)}>
@@ -379,17 +481,159 @@ const Candidates = () => {
         </div>
       )}
       {showViewModal && viewCandidate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md relative">
-            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-600" onClick={() => setShowViewModal(false)}>
-              <span className="text-xl">&times;</span>
-            </button>
-            <h2 className="text-2xl font-bold mb-4">Candidate Details</h2>
-            <div className="space-y-2">
-              <div><b>Address:</b> <span className="font-mono">{viewCandidate.address}</span></div>
-              <div><b>IPFS Hash:</b> <span className="font-mono">{viewCandidate.ipfsHash}</span></div>
-              <div><b>Verified:</b> {viewCandidate.isVerified ? 'Yes' : 'No'}</div>
-              <div><b>Registration Date:</b> {new Date(viewCandidate.registrationTimestamp).toLocaleDateString()}</div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">Candidate Profile</h2>
+              <button
+                onClick={() => setShowViewModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <span className="sr-only">Close</span>
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Header */}
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  {viewCandidate.profile?.photo ? (
+                    <img
+                      src={viewCandidate.profile.photo}
+                      alt={viewCandidate.profile.name}
+                      className="w-20 h-20 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center">
+                      <User className="w-10 h-10 text-primary-600" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      {viewCandidate.profile?.name || 'Unknown Candidate'}
+                    </h3>
+                    {viewCandidate.isVerified && (
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        Verified Candidate
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-1 text-sm text-gray-600">
+                    {viewCandidate.profile?.university && (
+                      <div className="flex items-center space-x-2">
+                        <GraduationCap className="w-4 h-4" />
+                        <span>{viewCandidate.profile.university}</span>
+                      </div>
+                    )}
+                    {viewCandidate.profile?.contact && (
+                      <div className="flex items-center space-x-2">
+                        <Mail className="w-4 h-4" />
+                        <span>{viewCandidate.profile.contact}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center space-x-2">
+                      <User className="w-4 h-4" />
+                      <span className="font-mono text-xs">{formatAddress(viewCandidate.address)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Manifesto */}
+              {viewCandidate.profile?.manifesto && (
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Campaign Manifesto</h4>
+                  <p className="text-gray-700 leading-relaxed">
+                    {viewCandidate.profile.manifesto}
+                  </p>
+                </div>
+              )}
+
+              {/* Platform */}
+              {viewCandidate.profile?.platform && viewCandidate.profile.platform.length > 0 && (
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Platform & Policies</h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    {viewCandidate.profile.platform.map((point, idx) => (
+                      <div key={idx} className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
+                        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                        <span className="text-gray-700">{point}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Experience */}
+              {viewCandidate.profile?.experience && (
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Experience</h4>
+                  <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
+                    <Award className="w-5 h-5 text-blue-600" />
+                    <span className="text-gray-700">{viewCandidate.profile.experience}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Achievements */}
+              {viewCandidate.profile?.achievements && viewCandidate.profile.achievements.length > 0 && (
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Key Achievements</h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    {viewCandidate.profile.achievements.map((achievement, idx) => (
+                      <div key={idx} className="flex items-center space-x-2 p-3 bg-yellow-50 rounded-lg">
+                        <Award className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+                        <span className="text-gray-700">{achievement}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Technical Details */}
+              <div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-3">Technical Details</h4>
+                <div className="space-y-2 text-sm bg-gray-50 p-4 rounded-lg">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Address:</span>
+                    <span className="font-mono">{viewCandidate.address}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">IPFS Hash:</span>
+                    <span className="font-mono">{viewCandidate.ipfsHash}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Verified:</span>
+                    <span>{viewCandidate.isVerified ? 'Yes' : 'No'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Registration Date:</span>
+                    <span>{new Date(viewCandidate.registrationTimestamp).toLocaleDateString()}</span>
+                  </div>
+                  {viewCandidate.profile?.studentId && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Student ID:</span>
+                      <span className="font-mono">{viewCandidate.profile.studentId}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Close Button */}
+              <div className="flex justify-end pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => setShowViewModal(false)}
+                  className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
