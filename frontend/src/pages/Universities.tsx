@@ -17,6 +17,10 @@ const Universities = () => {
   const [universities, setUniversities] = useState<University[]>([]);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
+  // Modal state
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [registerForm, setRegisterForm] = useState({ name: '', code: '', adminWallet: '' });
+  const [registerError, setRegisterError] = useState('');
 
   useEffect(() => {
     if (state.isConnected) {
@@ -73,6 +77,29 @@ const Universities = () => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
+  // Registration handler
+  const handleRegisterUniversity = (e: React.FormEvent) => {
+    e.preventDefault();
+    setRegisterError('');
+    if (!registerForm.name || !registerForm.code || !registerForm.adminWallet) {
+      setRegisterError('All fields are required.');
+      return;
+    }
+    // Mock registration (append to state)
+    setUniversities([
+      ...universities,
+      {
+        name: registerForm.name,
+        code: registerForm.code,
+        adminWallet: registerForm.adminWallet,
+        isActive: true,
+        registrationDate: Date.now(),
+      },
+    ]);
+    setShowRegisterModal(false);
+    setRegisterForm({ name: '', code: '', adminWallet: '' });
+  };
+
   if (!state.isConnected) {
     return (
       <div className="text-center space-y-6">
@@ -98,6 +125,51 @@ const Universities = () => {
 
   return (
     <div className="space-y-8">
+      {/* Register University Modal */}
+      {showRegisterModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md relative">
+            <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-600" onClick={() => setShowRegisterModal(false)}>
+              <span className="text-xl">&times;</span>
+            </button>
+            <h2 className="text-2xl font-bold mb-4">Register University</h2>
+            <form onSubmit={handleRegisterUniversity} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Name</label>
+                <input
+                  type="text"
+                  className="input"
+                  value={registerForm.name}
+                  onChange={e => setRegisterForm(f => ({ ...f, name: e.target.value }))}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Code</label>
+                <input
+                  type="text"
+                  className="input"
+                  value={registerForm.code}
+                  onChange={e => setRegisterForm(f => ({ ...f, code: e.target.value }))}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Admin Wallet</label>
+                <input
+                  type="text"
+                  className="input font-mono"
+                  value={registerForm.adminWallet}
+                  onChange={e => setRegisterForm(f => ({ ...f, adminWallet: e.target.value }))}
+                  required
+                />
+              </div>
+              {registerError && <div className="text-red-600 text-sm">{registerError}</div>}
+              <button type="submit" className="btn-primary w-full">Register</button>
+            </form>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-2">
@@ -109,6 +181,7 @@ const Universities = () => {
         {canRegisterUniversity() && (
           <button
             className="btn-primary inline-flex items-center space-x-2"
+            onClick={() => setShowRegisterModal(true)}
           >
             <Plus className="w-4 h-4" />
             <span>Register University</span>
