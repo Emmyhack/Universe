@@ -15,6 +15,9 @@ import {
 } from 'lucide-react';
 import { Candidate, UserRole, CandidateWithProfile } from '@/types';
 import { fetchMultipleCandidateProfiles, getPlaceholderProfile } from '@/utils/ipfs';
+import { CandidateListSkeleton } from '@/components/SkeletonLoader';
+import { FormError } from '@/components/FormInput';
+import toast from 'react-hot-toast';
 
 const Candidates = () => {
   const { state } = useWeb3();
@@ -34,6 +37,7 @@ const Candidates = () => {
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [verifyIndex, setVerifyIndex] = useState(-1);
   const [viewCandidate, setViewCandidate] = useState<CandidateWithProfile | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (state.isConnected) {
@@ -76,6 +80,8 @@ const Candidates = () => {
       await loadCandidateProfiles(candidatesData);
     } catch (error) {
       console.error('Error loading candidates:', error);
+      setError('Failed to load candidates. Please try refreshing the page.');
+      toast.error('Failed to load candidates');
     } finally {
       setLoading(false);
     }
@@ -206,10 +212,27 @@ const Candidates = () => {
   }
 
   if (loading) {
+    return <CandidateListSkeleton />;
+  }
+
+  if (error) {
     return (
-      <div className="text-center space-y-4">
-        <div className="animate-spin w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full mx-auto"></div>
-        <p className="text-gray-600">Loading candidates...</p>
+      <div className="space-y-6">
+        <FormError
+          title="Failed to Load Candidates"
+          message={error}
+        />
+        <div className="text-center">
+          <button
+            onClick={() => {
+              setError(null);
+              loadCandidates();
+            }}
+            className="btn-primary"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }

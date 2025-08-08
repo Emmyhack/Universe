@@ -20,6 +20,9 @@ import {
 } from 'lucide-react';
 import { Election, ElectionPhase, UserRole, CandidateWithProfile } from '@/types';
 import { fetchMultipleCandidateProfiles, getPlaceholderProfile } from '@/utils/ipfs';
+import { VotingPageSkeleton } from '@/components/SkeletonLoader';
+import { FormError } from '@/components/FormInput';
+import toast from 'react-hot-toast';
 
 const Voting = () => {
   const { electionId } = useParams<{ electionId: string }>();
@@ -35,6 +38,8 @@ const Voting = () => {
   const [platformFilter, setPlatformFilter] = useState('all');
   const [showCandidateModal, setShowCandidateModal] = useState(false);
   const [selectedCandidateProfile, setSelectedCandidateProfile] = useState<CandidateWithProfile | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [votingInProgress, setVotingInProgress] = useState(false);
 
   useEffect(() => {
     if (state.isConnected && electionId) {
@@ -71,6 +76,8 @@ const Voting = () => {
       await loadCandidateProfiles(mockElection.candidates);
     } catch (error) {
       console.error('Error loading election data:', error);
+      setError('Failed to load election data. Please try refreshing the page.');
+      toast.error('Failed to load election data');
     } finally {
       setLoading(false);
     }
@@ -122,6 +129,7 @@ const Voting = () => {
       setCandidatesWithProfiles(updatedCandidates);
     } catch (error) {
       console.error('Error loading candidate profiles:', error);
+      toast.error('Failed to load some candidate profiles');
     } finally {
       setProfilesLoading(false);
     }
@@ -154,12 +162,19 @@ const Voting = () => {
     if (!selectedCandidate || !canVote()) return;
 
     try {
+      setVotingInProgress(true);
+      
       // In a real app, this would call the smart contract
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate network delay
+      
       console.log('Casting vote for:', selectedCandidate);
       setHasVoted(true);
-      // Show success message
+      toast.success('Vote cast successfully! Your vote has been recorded.');
     } catch (error) {
       console.error('Error casting vote:', error);
+      toast.error('Failed to cast vote. Please try again.');
+    } finally {
+      setVotingInProgress(false);
     }
   };
 
@@ -215,10 +230,27 @@ const Voting = () => {
   }
 
   if (loading) {
+    return <VotingPageSkeleton />;
+  }
+
+  if (error) {
     return (
-      <div className="text-center space-y-4">
-        <div className="animate-spin w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full mx-auto"></div>
-        <p className="text-gray-600">Loading election...</p>
+      <div className="space-y-6">
+        <FormError
+          title="Failed to Load Election"
+          message={error}
+        />
+        <div className="text-center">
+          <button
+            onClick={() => {
+              setError(null);
+              loadElectionData();
+            }}
+            className="btn-primary"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
@@ -493,11 +525,20 @@ const Voting = () => {
 
                     <button
                       onClick={handleVote}
-                      disabled={!canVote()}
+                      disabled={!canVote() || votingInProgress}
                       className="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
                     >
-                      <Vote className="w-5 h-5 mr-2" />
-                      Cast Vote for {candidatesWithProfiles.find(c => c.address === selectedCandidate)?.profile?.name || 'Selected Candidate'}
+                      {votingInProgress ? (
+                        <>
+                          <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2" />
+                          Casting Vote...
+                        </>
+                      ) : (
+                        <>
+                          <Vote className="w-5 h-5 mr-2" />
+                          Cast Vote for {candidatesWithProfiles.find(c => c.address === selectedCandidate)?.profile?.name || 'Selected Candidate'}
+                        </>
+                      )}
                     </button>
                   </div>
                 )}

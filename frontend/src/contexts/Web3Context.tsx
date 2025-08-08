@@ -78,10 +78,14 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
   const connect = async () => {
     try {
       if (typeof window.ethereum === 'undefined') {
-        toast.error('MetaMask is not installed');
+        toast.error('MetaMask is not installed. Please install MetaMask to continue.', {
+          duration: 6000,
+        });
         return;
       }
 
+      toast.loading('Connecting to wallet...');
+      
       const provider = new ethers.BrowserProvider(window.ethereum);
       const accounts = await provider.send('eth_requestAccounts', []);
       const network = await provider.getNetwork();
@@ -92,10 +96,19 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
         chainId: Number(network.chainId),
       });
 
+      toast.dismiss();
       toast.success('Wallet connected successfully!');
-    } catch (error) {
+    } catch (error: any) {
+      toast.dismiss();
       console.error('Error connecting wallet:', error);
-      toast.error('Failed to connect wallet');
+      
+      if (error.code === 4001) {
+        toast.error('Connection request was rejected');
+      } else if (error.code === -32002) {
+        toast.error('Connection request is already pending. Please check MetaMask.');
+      } else {
+        toast.error('Failed to connect wallet. Please try again.');
+      }
     }
   };
 
@@ -153,10 +166,21 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.dismiss();
       toast.success('Transaction completed successfully!');
       return result;
-    } catch (error) {
+    } catch (error: any) {
       toast.dismiss();
-      toast.error('Transaction failed');
       console.error('Transaction error:', error);
+      
+      if (error.code === 4001) {
+        toast.error('Transaction was rejected by user');
+      } else if (error.code === -32603) {
+        toast.error('Transaction failed. Please check your gas settings.');
+      } else if (error.message?.includes('insufficient funds')) {
+        toast.error('Insufficient funds for transaction');
+      } else if (error.message?.includes('gas')) {
+        toast.error('Transaction failed due to gas issues. Please try increasing gas limit.');
+      } else {
+        toast.error('Transaction failed. Please try again.');
+      }
       throw error;
     }
   };
