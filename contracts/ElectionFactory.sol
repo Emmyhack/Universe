@@ -103,9 +103,7 @@ contract ElectionFactory is AccessControl, Pausable {
         require(address(universityRegistry) != address(0), "UniversityRegistry address not set");
 
         // Check if university exists and is active
-        // Using universityExists from UniversityRegistry
         require(universityRegistry.universityExists(_universityCode), "University not found");
-        // TODO: Add check for university isActive using getUniversityInfo
         require(universityRegistry.getUniversityInfo(_universityCode).isActive, "University is not active");
 
         uint256 proposalId = nextProposalId[_universityCode]++;
@@ -254,5 +252,9 @@ contract ElectionFactory is AccessControl, Pausable {
         election.grantRole(_role, _account);
     }
 
-    // TODO: Add a function to revoke a pending election proposal (callable by proposer or DAO)
+    /**
+     * @dev Future Enhancement: Add proposal revocation functionality
+     * - Allow proposer to revoke pending proposals
+     * - Add DAO-based revocation voting
+     */
 } 

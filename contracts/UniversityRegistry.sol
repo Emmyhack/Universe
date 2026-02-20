@@ -136,9 +136,12 @@ contract UniversityRegistry is AccessControl, Pausable {
         _unpause();
     }
 
-    // TODO: Add more comprehensive access control based on roles
-    // TODO: Add reentrancy guards where necessary (unlikely for this contract's current functions)
-    // TODO: Add pausable functionality (optional)
-    // TODO: Add more events for updates
+    /**
+     * @dev Future Enhancement Notes:
+     * - Additional role-based access control enhancements
+     * - Comprehensive reentrancy protection
+     * - Enhanced event logging for all state changes
+     * - Configurable pause functionality
+     */
 
 } 

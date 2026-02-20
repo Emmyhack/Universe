@@ -18,7 +18,6 @@ contract CandidateRegistry is AccessControl, Pausable {
         string ipfsHash; // IPFS hash for candidate manifesto/information
         bool isVerified;
         uint256 registrationTimestamp;
-        // TODO: Add more candidate-specific fields if necessary
     }
 
     // Mapping from candidate address to Candidate struct
@@ -38,7 +37,6 @@ contract CandidateRegistry is AccessControl, Pausable {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(CANDIDATE_MANAGER_ROLE, msg.sender);
         // CANDIDATE_ROLE is granted when a candidate is registered
-        // TODO: Grant other roles as needed
     }
 
     /**
@@ -51,7 +49,6 @@ contract CandidateRegistry is AccessControl, Pausable {
         require(_candidateAddress != address(0), "Invalid candidate address");
         require(bytes(_ipfsHash).length > 0, "IPFS hash cannot be empty");
         require(candidates[_candidateAddress].registrationTimestamp == 0, "Candidate already registered");
-        // TODO: Implement input validation (e.g., valid IPFS hash format if possible)
 
         candidates[_candidateAddress] = Candidate({
             candidateAddress: _candidateAddress,
@@ -76,7 +73,6 @@ contract CandidateRegistry is AccessControl, Pausable {
         require(candidates[_candidateAddress].registrationTimestamp != 0, "Candidate not found");
         require(bytes(_newIpfsHash).length > 0, "New IPFS hash cannot be empty");
         require(hasRole(CANDIDATE_MANAGER_ROLE, msg.sender) || _candidateAddress == msg.sender, "Caller is not manager or the candidate");
-        // TODO: Implement input validation
 
         string memory oldIpfsHash = candidates[_candidateAddress].ipfsHash;
         candidates[_candidateAddress].ipfsHash = _newIpfsHash;

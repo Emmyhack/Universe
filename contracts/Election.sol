@@ -299,7 +299,7 @@ contract Election is AccessControl, ReentrancyGuard, Pausable {
         require(currentPhase != ElectionPhase.Completed, "Election is already completed");
         electionConfig.isActive = false;
         emit ElectionCancelled(block.timestamp);
-        // TODO: Consider refunding any associated costs (if applicable)
+        // Note: Future enhancement - implement refund mechanism for associated costs
     }
 
     /**
