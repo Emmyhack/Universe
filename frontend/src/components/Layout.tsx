@@ -26,7 +26,7 @@ const Layout = ({ children }: LayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -34,10 +34,10 @@ const Layout = ({ children }: LayoutProps) => {
             {/* Logo */}
             <div className="flex items-center">
               <Link to="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-primary-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
                   <Vote className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-bold text-gradient">UniVote</span>
+                <span className="text-xl font-bold text-primary-700">UniVote</span>
               </Link>
             </div>
 

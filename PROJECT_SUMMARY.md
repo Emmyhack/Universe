@@ -70,9 +70,9 @@ UniVote is a comprehensive, production-ready decentralized university election p
 ## 🎨 User Interface
 
 ### Design System
-- 🎨 **Color Palette**: Professional blue-to-purple gradient
+- 🎨 **Color Palette**: Professional education blue with white background
 - 📱 **Responsive Design**: Desktop, tablet, and mobile optimized
-- ✨ **Animations**: Smooth transitions and micro-interactions
+- ✨ **Smooth Transitions**: Professional micro-interactions
 - 🎯 **Accessibility**: WCAG compliant design
 - 🔄 **Loading States**: Professional loading indicators
 

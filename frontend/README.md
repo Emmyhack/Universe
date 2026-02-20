@@ -84,8 +84,10 @@ src/
 ## 🎨 Design System
 
 ### Color Palette
-- **Primary**: Blue gradient (#3B82F6 to #8B5CF6)
-- **Secondary**: Gray scale (#F8FAFC to #0F172A)
+- **Primary**: Professional Education Blue (#1e4a94 to #3e6db3)
+- **Secondary**: Clean Gray Scale (#f8fafc to #0f172a)
+- **Accent**: Deep Education Blue (#2d5a96)
+- **Background**: Pure White
 - **Success**: Green (#10B981)
 - **Warning**: Yellow (#F59E0B)
 - **Error**: Red (#EF4444)
