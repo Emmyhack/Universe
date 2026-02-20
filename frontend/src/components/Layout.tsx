@@ -28,21 +28,21 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <Link to="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-                  <Vote className="w-5 h-5 text-white" />
+              <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+                <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center shadow-sm">
+                  <Vote className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-xl font-bold text-primary-700">UniVote</span>
+                <span className="text-2xl font-bold text-primary-700 font-display">UniVote</span>
               </Link>
             </div>
 
             {/* Navigation */}
-            <nav className="hidden md:flex space-x-8" role="navigation" aria-label="Main navigation">
+            <nav className="hidden md:flex space-x-6" role="navigation" aria-label="Main navigation">
               {navigation.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.href;
@@ -51,10 +51,10 @@ const Layout = ({ children }: LayoutProps) => {
                     key={item.name}
                     to={item.href}
                     aria-current={isActive ? 'page' : undefined}
-                    className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
                       isActive
-                        ? 'text-primary-600 bg-primary-50'
-                        : 'text-gray-600 hover:text-primary-600 hover:bg-gray-50'
+                        ? 'text-primary-700 bg-primary-50'
+                        : 'text-gray-700 hover:text-primary-600 hover:bg-gray-100'
                     }`}
                   >
                     <Icon className="w-4 h-4" aria-hidden="true" />
@@ -68,16 +68,16 @@ const Layout = ({ children }: LayoutProps) => {
             <div className="flex items-center space-x-4">
               {state.isConnected ? (
                 <div className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-2 px-3 py-2 bg-green-50 text-green-700 rounded-lg">
+                  <div className="flex items-center space-x-2 px-4 py-2 bg-green-50 text-green-700 rounded-lg border border-green-200">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm font-medium">
+                    <span className="text-sm font-semibold">
                       {formatAddress(state.account!)}
                     </span>
                   </div>
                   <button
                     onClick={disconnect}
                     aria-label="Disconnect wallet"
-                    className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                    className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200"
                   >
                     <LogOut className="w-5 h-5" />
                   </button>
@@ -95,9 +95,6 @@ const Layout = ({ children }: LayoutProps) => {
           </div>
         </div>
       </header>
-
-      {/* Mobile Navigation */}
-      <div className="md:hidden bg-white border-b border-gray-200">
         <div className="px-4 py-2">
           <nav className="flex space-x-4 overflow-x-auto" role="navigation" aria-label="Mobile navigation">
             {navigation.map((item) => {
