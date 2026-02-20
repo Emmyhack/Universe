@@ -18,9 +18,16 @@
     "hardhat": "^2.24.1"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^5.4.0",
     "merkletreejs": "^0.5.2"
   },
-  "keywords": ["blockchain", "elections", "university", "voting", "dapp"],
+  "keywords": [
+    "blockchain",
+    "elections",
+    "university",
+    "voting",
+    "dapp"
+  ],
   "author": "UniVote Team",
   "license": "MIT"
 }

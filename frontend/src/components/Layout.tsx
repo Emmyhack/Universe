@@ -95,6 +95,9 @@ const Layout = ({ children }: LayoutProps) => {
           </div>
         </div>
       </header>
+
+      {/* Mobile Navigation */}
+      <div className="md:hidden bg-white border-b border-gray-200">
         <div className="px-4 py-2">
           <nav className="flex space-x-4 overflow-x-auto" role="navigation" aria-label="Mobile navigation">
             {navigation.map((item) => {
@@ -107,8 +110,8 @@ const Layout = ({ children }: LayoutProps) => {
                   aria-current={isActive ? 'page' : undefined}
                   className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors duration-200 ${
                     isActive
-                      ? 'text-primary-600 bg-primary-50'
-                      : 'text-gray-600 hover:text-primary-600 hover:bg-gray-50'
+                      ? 'text-primary-700 bg-primary-50'
+                      : 'text-gray-700 hover:text-primary-600 hover:bg-gray-100'
                   }`}
                 >
                   <Icon className="w-4 h-4" aria-hidden="true" />
